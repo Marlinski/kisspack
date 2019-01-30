@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 use Try::Tiny;
+use XML::Parser;
 
 my $BUILD="build";
 my $ARTIFACT="artifact";
@@ -49,7 +50,6 @@ if($repo =~ m/$reporegexp/) {
         cloning($repo, $builddir);
         checkout($builddir, $commit);
         replacegradlew($builddir); 
-        checkgradle($builddir); 
         checktaskinstall($builddir); 
         runinstall($builddir, $remote, $project, $commit);
         extractartifacts($builddir, $artifactdir, $commit);
@@ -108,21 +108,28 @@ sub replacegradlew {
     execute("cp -r utility/gradlew/* $builddir/");
 }
 
-sub checkgradle {
-    my ($builddir) = @_;
-    my $buildgradle = "$builddir/build.gradle";
-    die("no build.gradle") unless -e $buildgradle;
-}
-
 sub checktaskinstall {
-    my ($builddir) = @_;
-    logfile("[+] check gradle tasks..");
-    execute("cd $builddir && ./gradlew tasks --all | grep install");
-    if($?) {
-        logfile("[+] adding plugin maven");
-        execute("echo 'apply plugin: \"maven\"' >> $builddir/build.gradle");
-    } else {
-        logfile("[+] task install exists");
+    my ($builddir, $artifactdir, $commit) = @_;
+    logfile("[+] Looking for libraries ...");
+    my $findbuildgradlecmd  = "find $builddir -name 'build.gradle' -type f \;";
+    my $findbuildgradleret = `$findbuildgradlecmd`;
+    my @listofbuildgradle = split /^/m, $findbuildgradleret;
+
+    while(my $buildgradle=shift(@listofbuildgradle)) {
+        if(haspattern($buildgradle, "java-library")) { 
+            logfile("[+] found java library: $buildgradle");
+            if(!haspattern($buildgradle, "'id.*?maven|plugin.*maven'")) {
+                logfile("[+] adding plugin maven to: $buildgradle");
+                execute("echo '\n\napply plugin: \"maven\"' >> $buildgradle");
+            }
+        }
+        if(haspattern($buildgradle, "android-library") || haspattern($buildgradle, "com.android.library")) { 
+            logfile("[+] found android library: $buildgradle");
+            if(!haspattern($buildgradle, "'id.*?maven|plugin.*maven'")) {
+                logfile("[+] adding plugin android-maven to: $buildgradle");
+                execute("sed -i '1s/^/plugins { id \"com.github.dcendents.android-maven\" version \"2.1\" }\\n/' $buildgradle");
+            }
+        }
     }
 }
 
@@ -137,26 +144,69 @@ sub runinstall {
 sub extractartifacts {
     my ($builddir, $artifactdir, $commit) = @_;
     logfile("[+] Looking for artifacts in build folders...");
-    my $findbuildcmd  = "find $builddir -name 'build' -type d \;";
+    my $findbuildcmd  = "find $builddir -name 'build' -type d";
     my $findbuildret = `$findbuildcmd`;
     my @listofbuildfolder = split /^/m, $findbuildret;
 
     while(my $buildfolder=shift(@listofbuildfolder)) {
         chomp($buildfolder);
-        logfile("found build folder: $buildfolder, looking for artifacts...");
-        my $findpomcmd = "find $buildfolder -name '*.jar' -type f \;";
-        my $findpomret = `$findpomcmd`;
-        my @listofartifact = split /^/m, $findpomret;
-
-        $buildfolder =~ s/$builddir(\/.*)/$1/;
-        $buildfolder =~ s/\/build//g;
-        while(my $artifactpath=shift(@listofartifact)) {
-            my $artifactname=( split '/', $artifactpath )[ -1 ];
-            logfile("found artifact: ".$artifactdir.$buildfolder."/".$commit."/".$artifactname);
-        }
+        searchpom($buildfolder);
     }
 }
 
+sub searchpom {
+    my ($buildfolder) = @_;
+
+    my $findpomcmd = "find $buildfolder -name 'pom*' -type f";
+    my $findpomret = `$findpomcmd`;
+    my @listofpoms = split /^/m, $findpomret;
+
+    while(my $pompath=shift(@listofpoms)) {
+        chomp($pompath);
+        buildartifact($buildfolder, $pompath);
+    }
+}
+
+sub buildartifact {
+    my ($buildfolder, $pompath) = @_;
+    my $artifactid  = `cat $pompath|sed -ne '/artifactId/{s/.*<artifactId>\\(.*\\)<\\/artifactId>.*/\\1/p;q;}'`;
+    my $packaging   = `cat $pompath|sed -ne '/packaging/{s/.*<packaging>\\(.*\\)<\\/packaging>.*/\\1/p;q;}'`;
+    chomp($artifactid);
+    chomp($packaging);
+
+    my $reponame = ( split '/', $artifactdir )[ -1 ];
+    my $artifactsubdir = $artifactdir;
+    if($reponame ne $artifactid) {
+        $artifactsubdir .= '/'.$artifactid.'/'.$commit;
+    } else {
+        $artifactsubdir .= '/'.$commit;
+    }
+    execute("mkdir -p $artifactsubdir");
+    
+    if($packaging eq "aar") {
+        my $findbuildcmd = "find $buildfolder -name '$artifactid*aar' -type f -print -quit";
+        my $findbuildret = `$findbuildcmd`;
+        chomp($findbuildret);
+        if($? == 0) {
+            logfile("found artifact: ".$artifactsubdir."/".$artifactid."-".$commit.".aar");
+            execute("cp $findbuildret $artifactsubdir/$artifactid-$commit.aar");
+            execute("cp $pompath $artifactsubdir/$artifactid-$commit.pom");
+            execute("md5sum $pompath > $artifactsubdir/$artifactid-$commit.pom.md5");
+            execute("sha1sum $pompath > $artifactsubdir/$artifactid-$commit.pom.sha1");
+        }
+    } else {
+        my $findbuildcmd = "find $buildfolder -name '$artifactid*jar' -type f -print -quit";
+        my $findbuildret = `$findbuildcmd`;
+        chomp($findbuildret);
+        if($? == 0) {
+            logfile("found artifact: ".$artifactsubdir."/".$artifactid."-".$commit.".jar");
+            execute("cp $findbuildret $artifactsubdir/$artifactid-$commit.jar");
+            execute("cp $pompath $artifactsubdir/$artifactid-$commit.pom");
+            execute("md5sum $pompath > $artifactsubdir/$artifactid-$commit.pom.md5");
+            execute("sha1sum $pompath > $artifactsubdir/$artifactid-$commit.pom.sha1");
+        }
+    }
+}
 
 sub cleanup {
     my ($project) = @_;
@@ -181,4 +231,10 @@ sub logfile {
             print $logfh "$debug\n";
         }
     }
+}
+
+sub haspattern {
+    my ($file, $pattern) = @_;
+    my $output = `grep -Eo $pattern $file`;
+    return $? == 0;
 }

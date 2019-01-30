@@ -12,7 +12,7 @@ func main() {
     }
 
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        
+        fmt.Fprintf(os.Stdout, "Hello World from path: %s\n", r.URL.Path)
     })
 
     http.ListenAndServe(":" + PORT, nil)
