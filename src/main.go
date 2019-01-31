@@ -20,7 +20,7 @@ func main() {
   var PORT string
 
   if PORT = os.Getenv("PORT"); PORT == "" {
-    PORT = "3001"
+    PORT = "8001"
   }
   if ARTIFACT_ROOT = os.Getenv("PORT"); ARTIFACT_ROOT == "" {
     ARTIFACT_ROOT = "artifact"
