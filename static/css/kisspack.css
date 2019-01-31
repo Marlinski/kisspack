@@ -1,0 +1,13 @@
+
+.jumbotron {
+    background-color: #01434f;
+    color: #ffffff;
+}
+
+.jumbotron img {
+    position: absolute;
+    left: 5%;
+    opacity: 0.5;
+    height: 200px;
+}
+
