@@ -24,15 +24,23 @@
             <h1>Kisspack!</h1>
             <h3>Keep It Simple Stupid PACKager!</h3>
             <p>From our git repo to artifact, it is friction-less!</p>
+            <form class="form-inline justify-content-center">
+              <div class="input-group mb-2 mr-sm-2 mb-sm-0">
+                <div class="input-group-addon">repo</div>
+                  <input type="text" class="form-control" id="gitURL" placeholder="Git repo URL">
+              </div>
+              <button type="button" class="btn btn-primary my-2 my-sm-0">Look Up</button>
+            </form>
         </div>
 
         <div class="container">
             <div class="row">
-                <div class="col-sm-3">
+                <div class="col-sm-4">
                     <h3>Artifacts</h3>
                     <table id="artifactTable">
                         <thead>
-                          <th data-field="artifactName">Artifact Name</th>
+                          <th data-field="ProjectName">Project Name</th>
+                          <th data-field="ArtifactName">Artifact Name</th>
                         </thead>
                     </table>
                 </div>

@@ -56,20 +56,20 @@ if($argrepo =~ m/$reporegexp/) {
     $remote =~ s#^\/(.*$)#$1#;
     $projectpath =~ s#^(.*?)\/$#$1#;
     $projectpath =~ s#^(.*?)\/$#$1#;
-    
+
     $remote =~ s/git@([\w\.]+)/$1/;
     $remote =~ s/\./\//g;
-    
+
     my ($projectdir, $builddir);
     try {
         ($projectdir, $builddir) = prep($remote, $projectpath, $arggroupid, $argcommit);
         $builddir = cloning($argrepo, $builddir, $argartifact);
         checkout($builddir, $argcommit);
-        replacegradlew($builddir); 
-        checktaskinstall($builddir, $arggroupid, $projectpath); 
+        replacegradlew($builddir);
+        checktaskinstall($builddir, $arggroupid, $projectpath);
         runinstall($builddir, $arggroupid, $argcommit);
         extractartifacts($builddir, $projectdir, $argcommit);
-    } 
+    }
     catch {
         logfile("[!] an error occured: $_");
         cleanup($builddir);
@@ -79,7 +79,7 @@ if($argrepo =~ m/$reporegexp/) {
     };
 
     logfile("\n>>> [+] done.");
-    
+
     if(defined $logfh) {
         close($logfh);
     }
@@ -91,16 +91,16 @@ if($argrepo =~ m/$reporegexp/) {
 
 sub prep {
     my ($remote, $project, $groupid, $commit, $artifact) = @_;
-    
-    my $projectdir = "$ARTIFACT/$groupid";    
+
+    my $projectdir = "$ARTIFACT/$groupid";
     $projectdir =~ s/\./\//g;
-    $logfile  = "$projectdir/build-$commit.log";    
+    $logfile  = "$projectdir/build-$commit.log";
     die "$logfile built already performed" if ( -e $logfile );
     execute("mkdir -p $projectdir");
     open ($logfh, '>', $logfile) or die "Could not open file $logfile: $!";
-   
+
     my $name = ( split '/', $project )[ -1 ];
-    my $builddir = "$BUILD/$groupid/$commit/$name";    
+    my $builddir = "$BUILD/$groupid/$commit/$name";
     $builddir =~ s/\./\//g;
     execute("rm -rf $builddir");
     execute("mkdir -p $builddir");
@@ -165,14 +165,14 @@ sub checktaskinstall {
     my $findbuildgradlecmd  = "find $builddir -name 'build.gradle' -type f \;";
     my $findbuildgradleret = `$findbuildgradlecmd`;
     my @listofbuildgradle = split /^/m, $findbuildgradleret;
-    
+
     while(my $buildgradle=shift(@listofbuildgradle)) {
-        if(haspattern($buildgradle, "java-library")) { 
+        if(haspattern($buildgradle, "java-library")) {
             logfile("[.] found java-library: $buildgradle");
             checkjavalibrarymaven($buildgradle);
             setgroupartifact($buildgradle, $group);
         }
-        if(haspattern($buildgradle, "android-library") || haspattern($buildgradle, "com.android.library")) { 
+        if(haspattern($buildgradle, "android-library") || haspattern($buildgradle, "com.android.library")) {
             logfile("[.] found android-library: $buildgradle");
             checkandroidlibrarymaven($buildgradle);
             setgroupartifact($buildgradle, $group);
@@ -249,7 +249,7 @@ sub buildartifact {
     my $reponame = ( split '/', $projectdir )[ -1 ];
     my $artifactsubdir = $projectdir.'/'.$pomartifactid.'/'.$argcommit;
     execute("mkdir -p $artifactsubdir", 1);
-    
+
     my $jarfile = "";
     my $jarname = "";
     if($pompackaging eq "aar") {

@@ -41,6 +41,8 @@ func main() {
   // api
   api := router.PathPrefix("/api").Subrouter()
   api.HandleFunc("/repositories", apiListRepositories)
+  api.HandleFunc("/info/{remote}/{repo}/{artifact}", apiInfo)
+  api.HandleFunc("/search/{remote}/{repo}/{artifact}", apiSearch)
 
   // static website
   router.PathPrefix("/").Handler(static)
@@ -49,35 +51,82 @@ func main() {
   http.ListenAndServe(":" + PORT, router)
 }
 
-func apiListRepositories(w http.ResponseWriter, r *http.Request) {
-  var artifacts = make([]map[string]string, 0)
+type Artifact struct {
+  ProjectName  string
+  GroupId      string
+  ArtifactName string
+  Version      string
+  BuildFile    string
+}
 
-  err := filepath.Walk("./artifact/",
+func apiSearch(w http.ResponseWriter, r *http.Request) {
+  /*
+  params := mux.Vars(r)
+  remote := params["remote"]
+  repo := params["repo"]
+  artifact := params["artifact"]
+  */
+}
+
+func apiInfo(w http.ResponseWriter, r *http.Request) {
+  params := mux.Vars(r)
+  remote := params["remote"]
+  repo := params["repo"]
+  artifact := params["artifact"]
+
+  remote = strings.Replace(remote, ".", "/", -1)
+  repo   = strings.Replace(repo, ".", "/", -1)
+  var artifacts = listAllArtifact(ARTIFACT_ROOT+"/"+remote+"/"+repo)
+
+  var onlyRequestedArtifact = make([]Artifact, 0, len(artifacts))
+  for v := range artifacts {
+    if(strings.Compare(artifacts[v].ArtifactName, artifact) == 0) {
+      onlyRequestedArtifact = append(onlyRequestedArtifact, artifacts[v])
+    }
+  }
+
+  artifactsJson, _ := json.MarshalIndent(onlyRequestedArtifact, "", " ")
+  w.Write(artifactsJson)
+  return
+}
+
+func listAllArtifact(root string) []Artifact {
+  var artifacts = make([]Artifact, 0)
+  filepath.Walk(root,
       func(path string, info os.FileInfo, err error) error {
         if err != nil {
             return err
         }
         if(strings.HasSuffix(path, ".pom")) {
-          var tokens = strings.Split(path, "/")
-          var libname = tokens[len(tokens)-3]
-          var version = tokens[len(tokens)-2]
-          var groupId = strings.Join(tokens[:len(tokens) - 3], ".")
-          var entry = make(map[string]string)
-          entry["groupId"] = groupId
-          entry["artifactName"] = libname+":"+version
-          artifacts = append(artifacts, entry)
+          path = strings.TrimPrefix(path, ARTIFACT_ROOT)
+          var tokens    = strings.Split(path, "/")
+          var version   = tokens[len(tokens)-2]
+          var libname   = tokens[len(tokens)-3]
+          var project   = tokens[len(tokens)-4]
+          var groupId   = strings.Join(tokens[1:len(tokens)-3], ".")
+          var buildFile = strings.Join(tokens[:len(tokens)-3], "/") + "/build-"+version+".log"
+          var entry     = Artifact{project, groupId, libname, version, buildFile}
+          artifacts     = append(artifacts, entry)
         }
         return nil
       })
+  return artifacts
+}
 
-  if err != nil {
-    artifactsJson, _ := json.MarshalIndent(artifacts, "", " ")
-    w.Write(artifactsJson)
-  } else {
-    artifactsJson, _ := json.MarshalIndent(artifacts, "", " ")
-    w.Write(artifactsJson)
-  }
+func apiListRepositories(w http.ResponseWriter, r *http.Request) {
+  var artifacts = listAllArtifact(ARTIFACT_ROOT)
 
+  var artifactsNoDuplicate = make([]Artifact, 0, len(artifacts))
+  var encountered = map[string]bool{}
+  for v := range artifacts {
+        if !encountered[artifacts[v].ArtifactName] == true {
+            encountered[artifacts[v].ArtifactName] = true
+            artifactsNoDuplicate = append(artifactsNoDuplicate, artifacts[v])
+        }
+    }
+
+  artifactsJson, _ := json.MarshalIndent(artifactsNoDuplicate, "", " ")
+  w.Write(artifactsJson)
   return
 }
 
@@ -123,7 +172,9 @@ func (h handleArtifact) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     cmdOutput := &bytes.Buffer{}
     cmd.Stdout = cmdOutput
     cmd.Run()
-  } else {
+  }
+
+  if  _, err := os.Stat(artifact_real_location); err == nil {
       fmt.Println("serving artifact: "+artifact_real_location)
       data, err := ioutil.ReadFile(string(artifact_real_location))
 
