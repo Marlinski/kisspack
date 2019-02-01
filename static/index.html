@@ -1,72 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta charset="utf-8">
-        <title>KissPack!</title>
-        <!-- Latest compiled and minified CSS -->
-        <link rel="stylesheet" href="/css/bootstrap.min.css">
-        <link rel="stylesheet" href="/css/bootstrap-table.min.css">
-        <link rel="stylesheet" href="/css/highlight.min.css">
-        <!-- jQuery library -->
-        <script src="/js/jquery.min.js"></script>
-        <!-- Latest compiled JavaScript -->
-        <script src="/js/bootstrap.min.js"></script>
-        <script src="/js/bootstrap-table.min.js"></script>
-        <script src="/js/highlight.min.js"></script>
-        <!-- kisspack related -->
-        <link rel="stylesheet" href="/css/kisspack.css">
-        <script src="/js/kisspack.js"></script>
-    </head>
-    <body>
-        <div class="jumbotron text-center">
-            <img src="/img/rightmesh.png"/>
-            <h1>Kisspack!</h1>
-            <h3>Keep It Simple Stupid PACKager!</h3>
-            <p>From our git repo to artifact, it is friction-less!</p>
-            <form class="form-inline justify-content-center">
-              <div class="input-group mb-2 mr-sm-2 mb-sm-0">
-                <div class="input-group-addon">repo</div>
-                  <input type="text" class="form-control" id="gitURL" placeholder="Git repo URL">
-              </div>
-              <button type="button" class="btn btn-primary my-2 my-sm-0">Look Up</button>
-            </form>
-        </div>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8">
+  <title>KissPack!</title>
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/bootstrap-table.min.css">
+  <link rel="stylesheet" href="/css/highlight.min.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+  <!-- jQuery library -->
+  <script src="/js/jquery.min.js"></script>
+  <!-- Latest compiled JavaScript -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script src="/js/bootstrap-table.min.js"></script>
+  <script src="/js/highlight.min.js"></script>
+  <!-- kisspack related -->
+  <link rel="stylesheet" href="/css/kisspack.css">
+  <script src="/js/kisspack.js"></script>
+</head>
+<body>
+  <div class="jumbotron text-center">
+    <img src="/img/rightmesh.png"/>
+    <h1>Kisspack!</h1>
+    <h3>Keep It Simple Stupid PACKager!</h3>
+    <p>From our git repo to artifact, it is friction-less!</p>
+    <form class="form-inline justify-content-center">
+      <div class="input-group mb-2 mr-sm-2 mb-sm-0">
+        <div class="input-group-addon">repo</div>
+        <input type="text" class="form-control" id="gitURL" placeholder="Git repo URL">
+      </div>
+      <button type="button" class="btn btn-primary my-2 my-sm-0">Look Up</button>
+    </form>
+  </div>
 
-        <div class="container">
-            <div class="row">
-                <div class="col-sm-4">
-                    <h3>Artifacts</h3>
-                    <table id="artifactTable">
-                        <thead>
-                          <th data-field="ProjectName">Project Name</th>
-                          <th data-field="ArtifactName">Artifact Name</th>
-                        </thead>
-                    </table>
-                </div>
-                <div class="col-sm-8">
-                    <h3>How To</h3>
-                    <p><b>Step 1.</b> Add the JitPack repository to your build file</p>
-                    <pre>
-                      <code class="gradle">
-  allprojects {
-    repositories {
-      ...
-      maven { url 'http://127.0.0.1:3001' }
-    }
-  }
-                      </code>
-                    </pre>
-                    <p><b>Step 2.</b> Add the dependency</p>
-                    <pre>
-                      <code class="gradle">
-  dependencies {
-    implementation 'com.github.RightMesh:libcbor:master'
-  }
-                      </code>
-                    </pre>
-                </div>
-            </div>
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-4">
+        <h3>Artifacts</h3>
+        <table id="artifactTable">
+          <thead>
+            <th data-field="ProjectName">Project Name</th>
+            <th data-field="ArtifactName" data-formatter="ArtifactIdFormatter">Artifact Name</th>
+          </thead>
+        </table>
+      </div>
+
+
+      <div class="col-sm-8" id="mainColumn">
+        <div class="row">
+          <h3>How To</h3>
+          <p><b>Step 1.</b> Add the JitPack repository to your build file</p>
+          <pre>
+            <code class="gradle">
+              allprojects {
+                repositories {
+                  ...
+                  maven { url 'http://127.0.0.1:3001' }
+                }
+              }
+            </code>
+          </pre>
+          <p><b>Step 2.</b> Add the dependency</p>
+          <pre>
+            <code class="gradle">
+              dependencies {
+                implementation 'com.github.RightMesh:libcbor:master'
+              }
+            </code>
+          </pre>
         </div>
-    </body>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
 </html>

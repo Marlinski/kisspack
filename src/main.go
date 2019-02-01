@@ -41,7 +41,7 @@ func main() {
   // api
   api := router.PathPrefix("/api").Subrouter()
   api.HandleFunc("/repositories", apiListRepositories)
-  api.HandleFunc("/info/{remote}/{repo}/{artifact}", apiInfo)
+  api.HandleFunc("/info/{group}/{artifact}", apiInfo)
   api.HandleFunc("/search/{remote}/{repo}/{artifact}", apiSearch)
 
   // static website
@@ -70,13 +70,11 @@ func apiSearch(w http.ResponseWriter, r *http.Request) {
 
 func apiInfo(w http.ResponseWriter, r *http.Request) {
   params := mux.Vars(r)
-  remote := params["remote"]
-  repo := params["repo"]
+  group := params["group"]
   artifact := params["artifact"]
 
-  remote = strings.Replace(remote, ".", "/", -1)
-  repo   = strings.Replace(repo, ".", "/", -1)
-  var artifacts = listAllArtifact(ARTIFACT_ROOT+"/"+remote+"/"+repo)
+  group = strings.Replace(group, ".", "/", -1)
+  var artifacts = listAllArtifact(ARTIFACT_ROOT+"/"+group)
 
   var onlyRequestedArtifact = make([]Artifact, 0, len(artifacts))
   for v := range artifacts {
