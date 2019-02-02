@@ -8,9 +8,11 @@
   <link rel="stylesheet" href="/css/bootstrap.min.css">
   <link rel="stylesheet" href="/css/bootstrap-table.min.css">
   <link rel="stylesheet" href="/css/highlight.min.css">
+  <link rel="stylesheet" href="/css/jquery-ui.min.css">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
   <!-- jQuery library -->
   <script src="/js/jquery.min.js"></script>
+  <script src="/js/jquery-ui.min.js"></script>
   <!-- Latest compiled JavaScript -->
   <script src="/js/bootstrap.min.js"></script>
   <script src="/js/bootstrap-table.min.js"></script>
@@ -28,9 +30,9 @@
     <form class="form-inline justify-content-center">
       <div class="input-group mb-2 mr-sm-2 mb-sm-0">
         <div class="input-group-addon">repo</div>
-        <input type="text" class="form-control" id="gitURL" placeholder="Git repo URL">
+        <input type="text" class="form-control url ui-autocomplete-input" id="gitURL" placeholder="Git repo URL">
       </div>
-      <button type="button" class="btn btn-primary my-2 my-sm-0">Look Up</button>
+      <button type="button" class="btn btn-primary my-2 my-sm-0" id="searchBtn">Look Up</button>
     </form>
   </div>
 

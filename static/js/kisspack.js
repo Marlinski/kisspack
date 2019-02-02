@@ -5,7 +5,6 @@ function linkFormatter(value) {
 function AddArtifactInfoRow() {
   if(! $('#buildSection').length )
   {
-    console.log("not exist lah");
     $('#mainColumn').prepend(`
       <div class="row" id="buildSection">
       <h3>Builds</h3>
@@ -19,15 +18,13 @@ function AddArtifactInfoRow() {
       </div>
       `);
     } else {
-      console.log("exist already");
     }
   }
 
-  function ArtifactInfo(group, artifact) {
-    console.log("group="+group+" artifact="+artifact);
+  function ArtifactInfo(artifact) {
     AddArtifactInfoRow()
     $.ajax({
-      url:"/api/info/"+group+"/"+artifact,
+      url:"/api/info/"+artifact,
       crossDomain:false,
       dataType:"json",
       success: function(artifactJson) {
@@ -51,6 +48,21 @@ function AddArtifactInfoRow() {
   }
 
   $(document).ready(function(){
+    $( "#gitURL" ).autocomplete({
+        delay: 500,
+        source: function( request, response ) {
+          $.ajax({
+            url: "../api/search/"+request.term,
+            dataType: "json",
+            success: function (data) {
+              response($.map(data, function(i,p) {
+                return i["GroupId"];
+              }));
+            }
+          });
+        },
+    });
+
     $.ajax({
       url:"/api/repositories",
       crossDomain:false,
@@ -65,4 +77,9 @@ function AddArtifactInfoRow() {
         });
       },
     });
-  });
+
+    $('#searchBtn').on('click', function(event) {
+      ArtifactInfo(document.getElementById('gitURL').value)
+      document.getElementById('gitURL').value = '';
+    });
+});
