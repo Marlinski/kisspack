@@ -21,8 +21,9 @@ function AddArtifactInfoRow() {
     }
   }
 
-  function ArtifactInfo(artifact) {
+  function ArtifactInfo(group, name) {
     AddArtifactInfoRow()
+    var artifact = group+"."+name
     $.ajax({
       url:"/api/info/"+artifact,
       crossDomain:false,

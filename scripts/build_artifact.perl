@@ -3,7 +3,6 @@
 use strict;
 use warnings;
 use Try::Tiny;
-use XML::Parser;
 
 my $BUILD="build";
 my $ARTIFACT="artifact";
