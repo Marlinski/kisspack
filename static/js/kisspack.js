@@ -21,9 +21,8 @@ function AddArtifactInfoRow() {
     }
   }
 
-  function ArtifactInfo(group, name) {
+  function ArtifactInfo(artifact) {
     AddArtifactInfoRow()
-    var artifact = group+"."+name
     $.ajax({
       url:"/api/info/"+artifact,
       crossDomain:false,
@@ -44,7 +43,7 @@ function AddArtifactInfoRow() {
   function ArtifactIdFormatter(value) {
     var group = value["GroupId"];
     var name = value["ArtifactNameBis"]
-    var ret = '<a href="javascript:void(0)" onClick="ArtifactInfo(\''+group+'\',\''+name+'\')">'+name+'</a>';
+    var ret = '<a href="javascript:void(0)" onClick="ArtifactInfo(\''+group+'.'+name+'\')">'+name+'</a>';
     return ret;
   }
 
@@ -57,7 +56,7 @@ function AddArtifactInfoRow() {
             dataType: "json",
             success: function (data) {
               response($.map(data, function(i,p) {
-                return i["GroupId"];
+                return i["GroupId"]+"."+i["ArtifactName"];
               }));
             }
           });
