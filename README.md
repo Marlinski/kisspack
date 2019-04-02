@@ -42,7 +42,7 @@ then add a dependency:
 
 ```gradle
 dependencies {
-   implementation 'lotd.Left.DTN.libdtn:libdtn-client-api:f35e1ac192'
+   implementation 'com.github.Marlinski.Terra.libdtn:libdtn-client-api:f35e1ac192'
 }
 ```
 
@@ -54,12 +54,11 @@ the dependency must follow the following pattern:
    implementation '<REMOTE>.<REPO>:<LIBRARY>:<COMMIT>'
 ```
 
-There are only two remotes available for the moment:
+There are only one remote available at the moment:
 
 | REMOTE  | Description |
 | ------------- | ------------- |
 | com.github | git@github.com:  |
-| lotd  | git@code.leftofthedot.com:  |
 
 
 

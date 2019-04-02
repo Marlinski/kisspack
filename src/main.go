@@ -34,7 +34,6 @@ func main() {
 	// git plugins
 	plugins = make(map[string]string)
 	plugins["/com/github"] = "github.com"
-	plugins["/lotd"] = "code.leftofthedot.com"
 	for k, v := range plugins {
 		router.PathPrefix(k).Handler(handleArtifact{prefix: k, value: v})
 	}
